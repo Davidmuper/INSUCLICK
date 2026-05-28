@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carrito de Compras — InsuClick</title>
+  <link rel="icon" href="img/favicon.png">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    /* ---- Layout de dos columnas ---- */
+    .cart-page { padding: 60px 0 90px; background: #F7F9FC; min-height: 70vh; }
+
+    /* ---- Fila de producto ---- */
+    .cart-item {
+      background: #fff;
+      border-radius: 16px;
+      border: 1px solid #E2E8F0;
+      padding: 20px 24px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      transition: box-shadow .2s;
+    }
+    .cart-item:hover { box-shadow: 0 4px 20px rgba(0,87,184,.08); }
+    .cart-item-img {
+      width: 80px; height: 80px;
+      object-fit: contain;
+      border-radius: 10px;
+      border: 1px solid #E2E8F0;
+      background: #F7F9FC;
+      flex-shrink: 0;
+      padding: 6px;
+    }
+    .cart-item-info { flex: 1; min-width: 0; }
+    .cart-item-info h6 { font-weight: 700; font-size: 1rem; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cart-item-info .unit-price { color: #A0AEC0; font-size: .85rem; }
+
+    /* Selector de cantidad en carrito */
+    .cart-qty-selector {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      border: 1.5px solid #E2E8F0;
+      border-radius: 50px;
+      overflow: hidden;
+      width: 120px;
+      flex-shrink: 0;
+    }
+    .cart-qty-btn {
+      width: 36px; height: 36px;
+      background: #F7F9FC;
+      border: none;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #0057B8;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .cart-qty-btn:hover { background: #EBF2FF; }
+    .cart-qty-input {
+      width: 100%;
+      border: none;
+      text-align: center;
+      font-weight: 700;
+      font-size: .9rem;
+      color: #0F1923;
+      background: #fff;
+      outline: none;
+      -moz-appearance: textfield;
+    }
+    .cart-qty-input::-webkit-outer-spin-button,
+    .cart-qty-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+    .cart-item-subtotal {
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: #0057B8;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      width: 110px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .btn-remove-item {
+      background: none;
+      border: none;
+      color: #A0AEC0;
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 8px;
+      transition: color .2s, background .2s;
+      flex-shrink: 0;
+    }
+    .btn-remove-item:hover { color: #E53E3E; background: #FFF5F5; }
+
+    /* ---- Panel resumen ---- */
+    .cart-summary {
+      background: #fff;
+      border-radius: 20px;
+      border: 1px solid #E2E8F0;
+      padding: 32px 28px;
+      position: sticky;
+      top: 90px;
+    }
+    .cart-summary h4 { font-weight: 800; font-size: 1.2rem; margin-bottom: 24px; }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #F0F4F8;
+      font-size: .92rem;
+      color: #4A5568;
+    }
+    .summary-row:last-of-type { border: none; }
+    .summary-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 0 0;
+      border-top: 2px solid #E2E8F0;
+      margin-top: 8px;
+    }
+    .summary-total span:first-child { font-weight: 800; font-size: 1rem; }
+    .summary-total span:last-child  { font-weight: 800; font-size: 1.4rem; color: #0057B8; font-family: 'Plus Jakarta Sans',sans-serif; }
+    .btn-checkout {
+      width: 100%;
+      background: #0057B8;
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 15px;
+      font-weight: 800;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background .2s, transform .2s;
+      margin-top: 20px;
+    }
+    .btn-checkout:hover { background: #003E8A; transform: translateY(-2px); }
+    .btn-clear-cart {
+      width: 100%;
+      background: none;
+      border: 1.5px solid #E2E8F0;
+      color: #A0AEC0;
+      border-radius: 50px;
+      padding: 11px;
+      font-weight: 700;
+      font-size: .88rem;
+      cursor: pointer;
+      transition: all .2s;
+      margin-top: 10px;
+    }
+    .btn-clear-cart:hover { border-color: #E53E3E; color: #E53E3E; }
+
+    /* ---- Empty state ---- */
+    .cart-empty {
+      text-align: center;
+      padding: 80px 20px;
+      background: #fff;
+      border-radius: 20px;
+      border: 1px solid #E2E8F0;
+    }
+    .cart-empty .empty-icon { font-size: 4rem; margin-bottom: 16px; }
+    .cart-empty h4 { font-weight: 800; color: #0F1923; margin-bottom: 8px; }
+    .cart-empty p { color: #A0AEC0; font-size: .95rem; margin-bottom: 28px; }
+
+    /* ---- Modal pedido ---- */
+    @media (max-width: 768px) {
+      .cart-item { flex-wrap: wrap; }
+      .cart-item-subtotal { width: auto; }
+      .cart-summary { position: static; margin-top: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm" id="main-navbar"></nav>
+
+<!-- HEADER -->
+<section style="background:linear-gradient(135deg,#EBF2FF,#f7f9fc); padding:50px 0 40px;">
+  <div class="container">
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+      <h1 style="font-size:2rem;font-weight:800;margin:0;">🛒 Mi Carrito</h1>
+      <span id="header-count" style="background:#EBF2FF;color:#0057B8;font-weight:700;font-size:.88rem;
+        padding:6px 16px;border-radius:50px;"></span>
+    </div>
+    <p style="color:#4A5568;font-size:.95rem;margin-top:8px;">
+      Revisa y ajusta tu pedido antes de finalizar.
+    </p>
+  </div>
+</section>
+
+<!-- CONTENIDO PRINCIPAL -->
+<section class="cart-page">
+  <div class="container">
+    <div class="row g-4">
+
+      <!-- Lista de ítems -->
+      <div class="col-lg-8">
+        <div id="cart-items-container"></div>
+      </div>
+
+      <!-- Resumen -->
+      <div class="col-lg-4">
+        <div class="cart-summary" id="cart-summary-panel">
+          <h4>Resumen del pedido</h4>
+          <div id="summary-rows"></div>
+          <div class="summary-total">
+            <span>Total</span>
+            <span id="summary-total-price">$ 0</span>
+          </div>
+          <button class="btn-checkout" onclick="openCheckout()">
+            Realizar Pedido →
+          </button>
+          <button class="btn-clear-cart" onclick="clearCart()">
+            🗑️ Vaciar carrito
+          </button>
+          <p style="color:#A0AEC0;font-size:.78rem;text-align:center;margin-top:14px;line-height:1.5;">
+            Al hacer clic en "Realizar Pedido" enviaremos<br>tu solicitud al proveedor por WhatsApp.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- MODAL CONFIRMACIÓN DE PEDIDO -->
+<div class="modal fade" id="checkoutModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:480px;">
+    <div class="modal-content" style="border-radius:20px;border:none;padding:8px;">
+      <div class="modal-header" style="border-bottom:1px solid #E2E8F0;padding:20px 28px;">
+        <h5 class="modal-title" style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;">
+          📋 Confirmar Pedido
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" style="padding:28px;">
+        <p style="color:#4A5568;font-size:.92rem;margin-bottom:20px;">
+          Completa tus datos para enviar el pedido al proveedor.
+        </p>
+        <div class="mb-3">
+          <label class="form-label">Nombre completo *</label>
+          <input type="text" class="form-control" id="co-nombre" placeholder="Tu nombre">
+          <div class="form-error">El nombre es obligatorio.</div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Teléfono / WhatsApp *</label>
+          <input type="tel" class="form-control" id="co-telefono" placeholder="300 000 0000">
+          <div class="form-error">Teléfono inválido.</div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Correo electrónico</label>
+          <input type="email" class="form-control" id="co-email" placeholder="correo@ejemplo.com">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Dirección de entrega *</label>
+          <textarea class="form-control" id="co-direccion" rows="2" placeholder="Calle, barrio, ciudad..."></textarea>
+          <div class="form-error">La dirección es obligatoria.</div>
+        </div>
+        <div class="mb-0">
+          <label class="form-label">Nota adicional</label>
+          <textarea class="form-control" id="co-nota" rows="2" placeholder="Instrucciones especiales, urgencia..."></textarea>
+        </div>
+
+        <!-- Resumen mini -->
+        <div style="background:#F7F9FC;border-radius:12px;padding:16px;margin-top:20px;">
+          <p style="font-weight:700;font-size:.85rem;margin-bottom:10px;color:#0F1923;">Resumen del pedido:</p>
+          <div id="mini-summary"></div>
+          <div style="border-top:1px solid #E2E8F0;margin-top:10px;padding-top:10px;display:flex;justify-content:space-between;">
+            <strong style="font-size:.92rem;">Total</strong>
+            <strong id="mini-total" style="color:#0057B8;font-family:'Plus Jakarta Sans',sans-serif;"></strong>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="border-top:1px solid #E2E8F0;padding:16px 28px;gap:10px;">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" onclick="confirmOrder()"
+          style="background:#0057B8;color:#fff;border:none;border-radius:50px;padding:11px 28px;
+          font-weight:800;font-family:'Plus Jakarta Sans',sans-serif;font-size:.92rem;cursor:pointer;">
+          ✅ Confirmar Pedido
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ÉXITO -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:420px;">
+    <div class="modal-content" style="border-radius:20px;border:none;text-align:center;padding:20px;">
+      <div class="modal-body" style="padding:40px 28px;">
+        <div style="font-size:4rem;margin-bottom:16px;">🎉</div>
+        <h4 style="font-weight:800;margin-bottom:10px;">¡Pedido enviado!</h4>
+        <p style="color:#4A5568;font-size:.95rem;margin-bottom:24px;">
+          Tu solicitud fue recibida. El proveedor se pondrá en contacto contigo pronto.
+        </p>
+        <p style="background:#F0FFF4;border-radius:10px;padding:14px;font-size:.85rem;color:#276749;">
+          📱 También puedes escribirnos directamente por WhatsApp al <strong>(+57) 300 000 0000</strong>
+        </p>
+        <button onclick="goToProducts()"
+          style="background:#0057B8;color:#fff;border:none;border-radius:50px;padding:13px 32px;
+          font-weight:800;font-family:'Plus Jakarta Sans',sans-serif;font-size:.95rem;cursor:pointer;margin-top:20px;width:100%;">
+          Seguir Comprando
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer-section">
+  <div class="container">
+    <div class="footer-bottom" style="margin-top:0;padding-top:0;border:none;">
+      <span>© 2026 InsuClick — Todos los derechos reservados</span>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/products.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/ui.js"></script>
+<script>
+  UI.renderNavbar('cart');
+
+  const checkoutModal = new bootstrap.Modal(document.getElementById('checkoutModal'));
+  const successModal  = new bootstrap.Modal(document.getElementById('successModal'));
+
+  /* -------- Render del carrito -------- */
+  function renderCart() {
+    const items = Cart.list();
+    const headerCount = document.getElementById('header-count');
+    headerCount.textContent = `${Cart.totalUnits()} unidades`;
+
+    const container = document.getElementById('cart-items-container');
+
+    if (!items.length) {
+      container.innerHTML = `
+        <div class="cart-empty">
+          <div class="empty-icon">🛒</div>
+          <h4>Tu carrito está vacío</h4>
+          <p>Agrega productos desde el catálogo para verlos aquí.</p>
+          <a href="productos.html"
+            style="background:#0057B8;color:#fff;border-radius:50px;padding:13px 32px;
+            font-weight:800;font-family:'Plus Jakarta Sans',sans-serif;font-size:.95rem;
+            display:inline-block;text-decoration:none;">
+            Ver Productos →
+          </a>
+        </div>`;
+      document.getElementById('cart-summary-panel').style.display = 'none';
+      return;
+    }
+
+    document.getElementById('cart-summary-panel').style.display = 'block';
+
+    container.innerHTML = items.map(item => `
+      <div class="cart-item" id="item-row-${item.id}">
+        <img src="${item.imagen}" alt="${item.nombre}" class="cart-item-img">
+        <div class="cart-item-info">
+          <h6>${item.nombre}</h6>
+          <span class="unit-price">${Products.formatPrice(item.precio)} / unidad</span>
+        </div>
+        <div class="cart-qty-selector">
+          <button class="cart-qty-btn" onclick="cartChangeQty(${item.id}, -1)">−</button>
+          <input class="cart-qty-input" type="number"
+                 id="cart-qty-${item.id}"
+                 value="${item.cantidad}" min="1" max="${item.stock}"
+                 onchange="cartSetQty(${item.id}, ${item.stock})">
+          <button class="cart-qty-btn" onclick="cartChangeQty(${item.id}, +1)">+</button>
+        </div>
+        <div class="cart-item-subtotal">
+          ${Products.formatPrice(item.precio * item.cantidad)}
+        </div>
+        <button class="btn-remove-item" onclick="removeItem(${item.id})" title="Eliminar">✕</button>
+      </div>
+    `).join('');
+
+    renderSummary(items);
+  }
+
+  function renderSummary(items) {
+    const rows = document.getElementById('summary-rows');
+    const totalEl = document.getElementById('summary-total-price');
+    rows.innerHTML = items.map(i => `
+      <div class="summary-row">
+        <span style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${i.nombre}</span>
+        <span style="flex-shrink:0;margin-left:8px;">${i.cantidad} × ${Products.formatPrice(i.precio)}</span>
+      </div>
+    `).join('');
+    totalEl.textContent = Products.formatPrice(Cart.totalPrice());
+  }
+
+  /* -------- Controles de cantidad -------- */
+  function cartChangeQty(id, delta) {
+    const item  = Cart.list().find(i => i.id === id);
+    if (!item) return;
+    const newQty = Math.max(1, Math.min(item.cantidad + delta, item.stock));
+    Cart.setQty(id, newQty);
+    renderCart();
+  }
+
+  function cartSetQty(id, maxStock) {
+    const input = document.getElementById(`cart-qty-${id}`);
+    let val = parseInt(input.value);
+    if (isNaN(val) || val < 1) val = 1;
+    if (val > maxStock) val = maxStock;
+    Cart.setQty(id, val);
+    renderCart();
+  }
+
+  function removeItem(id) {
+    Cart.remove(id);
+    UI.toast('Producto eliminado del carrito.', 'warning', 2500);
+    renderCart();
+  }
+
+  function clearCart() {
+    if (!Cart.list().length) return;
+    Cart.clear();
+    UI.toast('Carrito vaciado.', 'info', 2000);
+    renderCart();
+  }
+
+  /* -------- Checkout -------- */
+  function openCheckout() {
+    if (!Cart.list().length) return;
+
+    // Autocompletar si hay sesión
+    const user = Auth.currentUser();
+    if (user) {
+      document.getElementById('co-nombre').value   = user.nombre;
+      document.getElementById('co-email').value    = user.email;
+      document.getElementById('co-telefono').value = user.telefono || '';
+    }
+
+    // Mini resumen en el modal
+    const items = Cart.list();
+    document.getElementById('mini-summary').innerHTML = items.map(i => `
+      <div style="display:flex;justify-content:space-between;font-size:.83rem;color:#4A5568;margin-bottom:5px;">
+        <span>${i.nombre} × ${i.cantidad}</span>
+        <span>${Products.formatPrice(i.precio * i.cantidad)}</span>
+      </div>
+    `).join('');
+    document.getElementById('mini-total').textContent = Products.formatPrice(Cart.totalPrice());
+
+    checkoutModal.show();
+  }
+
+  function confirmOrder() {
+    const nombre    = document.getElementById('co-nombre');
+    const telefono  = document.getElementById('co-telefono');
+    const direccion = document.getElementById('co-direccion');
+
+    let valid = true;
+    if (!UI.validateField(nombre,   { required: true, minLen: 3 })) valid = false;
+    if (!UI.validateField(telefono, { required: true, tel: true })) valid = false;
+    if (!UI.validateField(direccion,{ required: true, minLen: 5 })) valid = false;
+    if (!valid) return;
+
+    // Aquí iría la llamada al backend. Por ahora simulamos el envío.
+    checkoutModal.hide();
+    setTimeout(() => {
+      Cart.clear();
+      successModal.show();
+    }, 400);
+  }
+
+  function goToProducts() {
+    window.location.href = 'productos.html';
+  }
+
+  /* -------- Actualizar cuando cambia el carrito -------- */
+  window.addEventListener('cart:updated', renderCart);
+
+  renderCart();
+</script>
+</body>
+</html>
