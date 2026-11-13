@@ -1,0 +1,20 @@
+INSUCLICK - PORTAL CON LOGIN COMO PRIMERA PANTALLA
+
+CONTENIDO
+Este paquete contiene el portal web preparado a partir de la versión que está dentro del backend (META-INF/resources/portal), que ya usa la API Java de Render para registro e inicio de sesión.
+
+CAMBIO PRINCIPAL
+- Al abrir index.html sin sesión, redirige inmediatamente a login.html.
+- Desde login.html se puede ir a registro.html.
+- Después de iniciar sesión o registrarse, comprador entra a index.html (portal principal) y vendedor a admin.html.
+- La autenticación usa https://insuclick-backend.onrender.com/api/auth y almacena únicamente los datos de sesión devueltos por el servidor; no almacena contraseñas en localStorage.
+
+PUBLICACIÓN EN VERCEL
+1. Descarga y descomprime este ZIP.
+2. En la raíz del repositorio que publica Vercel, reemplaza los archivos/carpetas del portal por TODO el contenido de esta carpeta (index.html, login.html, registro.html, admin.html, productos.html, css/, js/, img/, etc.).
+3. No subas .env, contraseñas, target/ ni archivos de configuración privados.
+4. Haz commit y push a la rama que Vercel tiene conectada.
+5. Espera el despliegue y prueba https://insuclick.vercel.app/ en ventana incógnita.
+
+IMPORTANTE
+Este paquete corrige los archivos del FRONTEND para que la primera pantalla sea login/registro. No cambia ni despliega Render, ni modifica la base de datos. La API de Render debe estar activa para que el registro y el inicio de sesión funcionen.

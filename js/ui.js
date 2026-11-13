@@ -88,10 +88,14 @@ const UI = (() => {
           <a class="btn-nav-login nav-link" href="login.html">Iniciar Sesión</a>
         </li>
         <li class="nav-item ms-lg-1">
-          <a class="btn-nav-register nav-link" href="registro.html">Registro Gratis</a>
+          <a class="btn-nav-register nav-link" href="registro.html">Registrarse</a>
         </li>
       `;
     }
+
+    // Portada pública: sin sesión el menú muestra solo Iniciar Sesión y Registrarse.
+    // El catálogo, el carrito y las demás secciones aparecen después de iniciar sesión.
+    const menuPrivado = user ? `${navLinksHTML}${cartBtn}` : '';
 
     const nav = document.getElementById('main-navbar');
     if (!nav) return;
@@ -106,8 +110,7 @@ const UI = (() => {
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto align-items-lg-center">
-            ${navLinksHTML}
-            ${cartBtn}
+            ${menuPrivado}
             ${authHTML}
           </ul>
         </div>

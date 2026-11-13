@@ -59,8 +59,7 @@
 <script>
   // Si ya hay sesión, redirigir
   if (Auth.isLoggedIn()) {
-    const u = Auth.currentUser();
-    window.location.href = u.rol === 'vendedor' ? 'admin.html' : 'index.html';
+    window.location.href = Auth.destino(Auth.currentUser());
   }
 
   function togglePass(id, btn) {
@@ -69,7 +68,10 @@
     btn.textContent = el.type === 'password' ? '👁' : '🙈';
   }
 
-  function doLogin() {
+  let enviando = false; // evita enviar dos veces mientras responde el servidor
+
+  async function doLogin() {
+    if (enviando) return;
     const emailEl = document.getElementById('login-email');
     const passEl  = document.getElementById('login-password');
     const errBox  = document.getElementById('login-error');
@@ -78,12 +80,18 @@
     let valid = true;
     if (!UI.validateField(emailEl, { required: true, email: true })) valid = false;
     if (!UI.validateField(passEl,  { required: true })) valid = false;
+    // El mensaje de la contraseña está fuera del contenedor del campo (por el botón 👁),
+    // por eso el CSS (.is-invalid + .form-error) no lo mostraba: se muestra aquí.
+    passEl.parentElement.nextElementSibling.style.display =
+      passEl.classList.contains('is-invalid') ? 'block' : '';
     if (!valid) return;
 
-    const result = Auth.login({
+    enviando = true;
+    const result = await Auth.login({
       email: emailEl.value.trim(),
       password: passEl.value
     });
+    enviando = false;
 
     if (!result.ok) {
       errBox.textContent = result.msg;
@@ -93,7 +101,7 @@
 
     UI.toast(`¡Hola, ${result.user.nombre.split(' ')[0]}! Sesión iniciada.`, 'success');
     setTimeout(() => {
-      window.location.href = result.user.rol === 'vendedor' ? 'admin.html' : 'index.html';
+      window.location.href = Auth.destino(result.user);
     }, 1000);
   }
 

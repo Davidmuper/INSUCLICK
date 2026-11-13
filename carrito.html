@@ -326,6 +326,7 @@
 <script src="js/cart.js"></script>
 <script src="js/ui.js"></script>
 <script>
+  Auth.requireAuth('login.html'); // página privada: requiere iniciar sesión
   UI.renderNavbar('cart');
 
   const checkoutModal = new bootstrap.Modal(document.getElementById('checkoutModal'));

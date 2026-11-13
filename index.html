@@ -1,6 +1,20 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+  <script>
+    // INSUCLICK: primero se solicita iniciar sesión o crear una cuenta.
+    // Solo una sesión creada tras validar con el backend permite ver el portal.
+    (function () {
+      try {
+        var sesion = localStorage.getItem('insuclick_session');
+        if (!sesion || sesion === 'null') {
+          window.location.replace('login.html');
+        }
+      } catch (e) {
+        window.location.replace('login.html');
+      }
+    })();
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>InsuClick — Insumos Médicos</title>
@@ -281,8 +295,49 @@
   </div>
 </div>
 
-<!-- ===================== PRODUCTOS POPULARES ===================== -->
-<section class="products-section">
+<!-- ===================== BENEFICIOS (portada pública) ===================== -->
+<section class="categories-section">
+  <div class="container">
+    <div class="section-title">
+      <span class="section-badge">¿Por qué InsuClick?</span>
+      <h2>Beneficios</h2>
+      <p>Lo que obtienes al comprar, vender o donar con nosotros.</p>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-3">
+        <div class="category-card h-100">
+          <div style="font-size:2.6rem;margin-bottom:12px;">🤝</div>
+          <h5>Sin intermediarios</h5>
+          <p style="color:var(--text-mid);font-size:.92rem;margin:0;">Compradores y proveedores se conectan directamente.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="category-card h-100">
+          <div style="font-size:2.6rem;margin-bottom:12px;">⚡</div>
+          <h5>Rápido y confiable</h5>
+          <p style="color:var(--text-mid);font-size:.92rem;margin:0;">Encuentra lo que necesitas por categoría y arma tu pedido en minutos.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="category-card h-100">
+          <div style="font-size:2.6rem;margin-bottom:12px;">🩺</div>
+          <h5>Insumos no medicamentosos</h5>
+          <p style="color:var(--text-mid);font-size:.92rem;margin:0;">Protección, equipos, instrumental y desechables para el sector salud.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="category-card h-100">
+          <div style="font-size:2.6rem;margin-bottom:12px;">💙</div>
+          <h5>Vende y dona</h5>
+          <p style="color:var(--text-mid);font-size:.92rem;margin:0;">Los proveedores publican sus productos y pueden apoyar a fundaciones.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PRODUCTOS POPULARES (solo con sesión) ===================== -->
+<section class="products-section" id="home-products-section">
   <div class="container">
     <div class="section-title">
       <span class="section-badge">Más Vendidos</span>
@@ -300,7 +355,7 @@
 <section class="categories-section">
   <div class="container">
     <div class="section-title">
-      <span class="section-badge">Explora</span>
+      <span class="section-badge">Nuestros servicios</span>
       <h2>Categorías</h2>
       <p>Navega por especialidad y encuentra exactamente lo que necesitas.</p>
     </div>
@@ -352,7 +407,7 @@
 <section class="founders-section">
   <div class="container">
     <div class="section-title">
-      <span class="section-badge">El Equipo</span>
+      <span class="section-badge">Quiénes somos</span>
       <h2>Fundadores</h2>
       <p>Las personas detrás de InsuClick.</p>
     </div>
@@ -438,6 +493,11 @@
 <script src="js/ui.js"></script>
 <script>
   UI.renderNavbar('home');
+
+  // El catálogo es privado: sin sesión no se muestran los productos populares
+  if (!Auth.isLoggedIn()) {
+    document.getElementById('home-products-section').style.display = 'none';
+  }
 
   // Modal video — play al abrir, pause al cerrar
   const videoModalEl = document.getElementById('videoModal');

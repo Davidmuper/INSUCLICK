@@ -5,17 +5,32 @@
 
 const Auth = (() => {
 
-  const USERS_KEY  = 'insuclick_users';
+  // Backend Java (Render) que valida usuarios contra Neon
+  const API_URL     = 'https://insuclick-backend.onrender.com/api/auth';
   const SESSION_KEY = 'insuclick_session';
+
+  // Limpieza: la versión anterior guardaba usuarios y contraseñas en el navegador
+  localStorage.removeItem('insuclick_users');
 
   /* ---------- utilidades internas ---------- */
 
-  function getUsers() {
-    return JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
-  }
-
-  function saveUsers(users) {
-    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+  // Envía JSON al backend y devuelve { ok, msg } o { ok, user }
+  async function post(ruta, datos) {
+    try {
+      const resp = await fetch(API_URL + ruta, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(datos)
+      });
+      const json = await resp.json().catch(() => null);
+      if (json && typeof json.ok === 'boolean') return json;
+      if (resp.status >= 500) {
+        return { ok: false, msg: 'El servidor tuvo un problema. Intenta de nuevo en unos minutos.' };
+      }
+      return { ok: false, msg: 'Datos inválidos. Revisa el formulario.' };
+    } catch (e) {
+      return { ok: false, msg: 'No se pudo conectar con el servidor. Intenta de nuevo en unos segundos.' };
+    }
   }
 
   function getSession() {
@@ -28,34 +43,17 @@ const Auth = (() => {
 
   /* ---------- API pública ---------- */
 
-  function register({ nombre, email, telefono, password, rol }) {
-    const users = getUsers();
-    if (users.find(u => u.email === email)) {
-      return { ok: false, msg: 'El correo ya está registrado.' };
-    }
-    const newUser = {
-      id: Date.now(),
-      nombre,
-      email,
-      telefono,
-      password,   // En producción usar hashing
-      rol,        // 'comprador' | 'vendedor'
-      createdAt: new Date().toISOString()
-    };
-    users.push(newUser);
-    saveUsers(users);
-    saveSession(newUser);
-    return { ok: true, user: newUser };
+  // La sesión guarda solo { id, nombre, email, telefono, rol }: nunca la contraseña
+  async function register({ nombre, email, telefono, password, rol }) {
+    const result = await post('/registro', { nombre, email, telefono, password, rol });
+    if (result.ok) saveSession(result.user);
+    return result;
   }
 
-  function login({ email, password }) {
-    const users = getUsers();
-    const user = users.find(u => u.email === email && u.password === password);
-    if (!user) {
-      return { ok: false, msg: 'Correo o contraseña incorrectos.' };
-    }
-    saveSession(user);
-    return { ok: true, user };
+  async function login({ email, password }) {
+    const result = await post('/login', { email, password });
+    if (result.ok) saveSession(result.user);
+    return result;
   }
 
   function logout() {
@@ -73,8 +71,18 @@ const Auth = (() => {
   /* Redirige a login si no hay sesión */
   function requireAuth(redirectTo = 'login.html') {
     if (!isLoggedIn()) {
+      // Recuerda la página pedida (ej. productos.html?cat=...) para volver tras el login
+      sessionStorage.setItem('insuclick_volver', location.pathname.split('/').pop() + location.search);
       window.location.href = redirectTo;
     }
+  }
+
+  /* Página a la que va cada rol después de entrar */
+  function destino(user) {
+    if (user.rol === 'vendedor') return 'admin.html';
+    const volver = sessionStorage.getItem('insuclick_volver') || '';
+    sessionStorage.removeItem('insuclick_volver');
+    return volver && volver !== 'login.html' && volver !== 'registro.html' ? volver : 'index.html';
   }
 
   /* Iniciales para el avatar */
@@ -82,6 +90,6 @@ const Auth = (() => {
     return name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
   }
 
-  return { register, login, logout, isLoggedIn, currentUser, requireAuth, initials };
+  return { register, login, logout, isLoggedIn, currentUser, requireAuth, destino, initials };
 
 })();

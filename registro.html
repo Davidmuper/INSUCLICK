@@ -104,7 +104,9 @@
 <script src="js/cart.js"></script>
 <script src="js/ui.js"></script>
 <script>
-  if (Auth.isLoggedIn()) window.location.href = 'index.html';
+  if (Auth.isLoggedIn()) {
+    window.location.href = Auth.destino(Auth.currentUser());
+  }
 
   let rolSeleccionado = '';
 
@@ -120,8 +122,11 @@
     btn.textContent = el.type === 'password' ? '👁' : '🙈';
   }
 
-  function doRegister() {
-    const nombre   = document.getElementById('reg-nombre');
+  let enviando = false; // evita registrar dos veces mientras responde el servidor
+
+  async function doRegister() {
+    if (enviando) return;
+    const nombre  = document.getElementById('reg-nombre');
     const email    = document.getElementById('reg-email');
     const telefono = document.getElementById('reg-telefono');
     const password = document.getElementById('reg-password');
@@ -133,6 +138,10 @@
     if (!UI.validateField(nombre,   { required: true, minLen: 3 })) valid = false;
     if (!UI.validateField(email,    { required: true, email: true })) valid = false;
     if (!UI.validateField(password, { required: true, minLen: 6 })) valid = false;
+    // El mensaje de la contraseña está fuera del contenedor del campo (por el botón 👁),
+    // por eso el CSS (.is-invalid + .form-error) no lo mostraba: se muestra aquí.
+    password.parentElement.nextElementSibling.style.display =
+      password.classList.contains('is-invalid') ? 'block' : '';
 
     // Telefono opcional pero si tiene valor validar
     if (telefono.value.trim()) {
@@ -155,13 +164,15 @@
 
     if (!valid) return;
 
-    const result = Auth.register({
+    enviando = true;
+    const result = await Auth.register({
       nombre: nombre.value.trim(),
       email: email.value.trim(),
       telefono: telefono.value.trim(),
       password: password.value,
       rol: rolSeleccionado
     });
+    enviando = false;
 
     if (!result.ok) {
       errBox.textContent = result.msg;
@@ -171,7 +182,7 @@
 
     UI.toast(`¡Cuenta creada! Bienvenido, ${result.user.nombre.split(' ')[0]}.`, 'success');
     setTimeout(() => {
-      window.location.href = rolSeleccionado === 'vendedor' ? 'admin.html' : 'index.html';
+      window.location.href = Auth.destino(result.user);
     }, 1200);
   }
 </script>
