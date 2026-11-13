@@ -1,0 +1,483 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Productos — InsuClick</title>
+
+  <link rel="icon" href="img/favicon.png">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+
+  <style>
+    .product-card {
+      background: #fff;
+      border: 1px solid #E2E8F0;
+      border-radius: 16px;
+      padding: 24px 20px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      transition: transform .25s, box-shadow .25s;
+      height: 100%;
+    }
+
+    .product-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 32px rgba(0,87,184,.13);
+    }
+
+    .product-img {
+      width: 130px;
+      height: 130px;
+      object-fit: contain;
+      margin-bottom: 14px;
+      cursor: pointer;
+    }
+
+    .product-card h5 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .product-card .prod-desc {
+      color: #4A5568;
+      font-size: .85rem;
+      flex: 1;
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+
+    .product-price {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #0057B8;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      margin-bottom: 6px;
+    }
+
+    .stock-tag {
+      font-size: .78rem;
+      color: #A0AEC0;
+      margin-bottom: 14px;
+    }
+
+    .stock-tag.low {
+      color: #E53E3E;
+      font-weight: 700;
+    }
+
+    .qty-selector {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      border: 1.5px solid #E2E8F0;
+      border-radius: 50px;
+      overflow: hidden;
+      margin-bottom: 12px;
+      width: 100%;
+      max-width: 160px;
+    }
+
+    .qty-btn {
+      width: 38px;
+      height: 38px;
+      background: #F7F9FC;
+      border: none;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #0057B8;
+      cursor: pointer;
+      transition: background .2s;
+      flex-shrink: 0;
+    }
+
+    .qty-btn:hover {
+      background: #EBF2FF;
+    }
+
+    .qty-input {
+      width: 100%;
+      border: none;
+      text-align: center;
+      font-weight: 700;
+      font-size: .95rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: #0F1923;
+      background: #fff;
+      outline: none;
+      -moz-appearance: textfield;
+    }
+
+    .qty-input::-webkit-outer-spin-button,
+    .qty-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+    }
+
+    .btn-add-cart {
+      width: 100%;
+      background: #0057B8;
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 11px 0;
+      font-weight: 700;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: .88rem;
+      cursor: pointer;
+      transition: background .2s, transform .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-add-cart:hover {
+      background: #003E8A;
+      transform: scale(1.02);
+    }
+
+    .btn-add-cart.in-cart {
+      background: #00C6A2;
+    }
+
+    .btn-add-cart.in-cart:hover {
+      background: #009E82;
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm" id="main-navbar"></nav>
+
+  <!-- HEADER -->
+  <section style="background:linear-gradient(135deg,#EBF2FF,#f7f9fc); padding:60px 0 50px;">
+    <div class="container">
+      <h1 style="font-size:2.4rem;font-weight:800;margin-bottom:8px;">
+        Catálogo de Productos
+      </h1>
+
+      <p style="color:#4A5568;font-size:1.05rem;">
+        Insumos médicos no medicamentosos para clínicas y profesionales de la salud.
+      </p>
+    </div>
+  </section>
+
+  <!-- FILTROS + GRID -->
+  <section class="products-section" style="padding-top:50px;">
+    <div class="container">
+
+      <!-- Toolbar -->
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+
+        <div class="search-bar-wrapper" style="max-width:340px;flex:1;">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            id="search-input"
+            class="form-control"
+            placeholder="Buscar productos..."
+          >
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap align-items-center">
+          <select
+            class="form-select"
+            id="cat-filter"
+            style="width:auto;height:46px;border-radius:50px;border:1.5px solid #E2E8F0;"
+          >
+            <option value="">Todas las categorías</option>
+          </select>
+
+          <span
+            id="count-badge"
+            style="background:#EBF2FF;color:#0057B8;font-weight:700;font-size:.85rem;padding:10px 18px;border-radius:50px;display:flex;align-items:center;white-space:nowrap;"
+          ></span>
+        </div>
+      </div>
+
+      <!-- Grid -->
+      <div class="row" id="products-grid"></div>
+
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer-section">
+    <div class="container">
+      <div class="footer-bottom" style="margin-top:0;padding-top:0;border:none;">
+        <span>© 2026 InsuClick — Todos los derechos reservados</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script src="js/auth.js"></script>
+  <script src="js/products.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/ui.js"></script>
+
+  <script>
+    Auth.requireAuth('login.html');
+    UI.renderNavbar('products');
+
+    const grid = document.getElementById('products-grid');
+    const searchIn = document.getElementById('search-input');
+    const catFilter = document.getElementById('cat-filter');
+    const countBadge = document.getElementById('count-badge');
+
+    /*
+     * REGISTRAR CLIC EN NEON
+     * Envía la interacción del usuario al backend.
+     */
+    async function registrarClicProducto(id) {
+      const producto = Products.getById(id);
+
+      if (!producto) {
+        console.error('No se encontró el producto:', id);
+        return;
+      }
+
+      const usuario = Auth.currentUser();
+
+      const datos = {
+        productoId: Number(producto.id),
+        nombreProducto: producto.nombre,
+        emailUsuario: usuario ? usuario.email : "",
+        accion: "CLIC"
+      };
+
+      console.log('Enviando clic del producto:', datos);
+
+      try {
+        const respuesta = await fetch(
+          'https://insuclick-backend.onrender.com/api/interacciones',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(datos)
+          }
+        );
+
+        const resultado = await respuesta.json();
+
+        if (!respuesta.ok || !resultado.ok) {
+          throw new Error(
+            resultado.msg || 'No se pudo registrar la interacción'
+          );
+        }
+
+        console.log('Clic registrado correctamente en Neon:', resultado);
+
+      } catch (error) {
+        console.error('Error registrando el clic:', error);
+
+        UI.toast(
+          'No fue posible registrar la interacción en la base de datos',
+          'error'
+        );
+      }
+    }
+
+    // Poblar categorías
+    Products.categories().forEach(cat => {
+      catFilter.innerHTML += `<option value="${cat}">${cat}</option>`;
+    });
+
+    // Parámetro URL ?cat=
+    const params = new URLSearchParams(window.location.search);
+
+    if (params.get('cat')) {
+      catFilter.value = params.get('cat');
+    }
+
+    /* Render de tarjetas */
+    function renderGrid() {
+      const q = searchIn.value.trim();
+      const cat = catFilter.value;
+
+      const items = Products.list({
+        search: q,
+        categoria: cat
+      });
+
+      countBadge.textContent =
+        `${items.length} producto${items.length !== 1 ? 's' : ''}`;
+
+      if (!items.length) {
+        grid.innerHTML = `
+          <div class="col-12">
+            <div class="empty-state">
+              <div class="empty-icon">📦</div>
+              <h4>No se encontraron productos</h4>
+              <p>Intenta con otro término de búsqueda o categoría.</p>
+            </div>
+          </div>
+        `;
+
+        return;
+      }
+
+      grid.innerHTML = items.map(p => {
+        const inCart = Cart.hasItem(p.id);
+        const currentQ = Cart.getQty(p.id) || 1;
+        const stockLow = p.stock <= 20;
+
+        return `
+          <div class="col-md-6 col-lg-4 col-xl-3 d-flex mb-4">
+            <div class="product-card w-100">
+
+              <img
+                src="${p.imagen}"
+                alt="${p.nombre}"
+                class="product-img"
+                onclick="registrarClicProducto(${p.id})"
+                title="Ver producto"
+              >
+
+              <span class="badge-category mb-2">${p.categoria}</span>
+
+              <h5>${p.nombre}</h5>
+
+              <p class="prod-desc">${p.descripcion}</p>
+
+              <div class="product-price">
+                ${Products.formatPrice(p.precio)}
+              </div>
+
+              <div class="stock-tag ${stockLow ? 'low' : ''}">
+                ${stockLow ? '⚠️ Pocas unidades: ' : 'Stock: '}${p.stock}
+              </div>
+
+              <!-- Selector de cantidad -->
+              <div class="qty-selector">
+
+                <button
+                  class="qty-btn"
+                  onclick="changeQty(${p.id}, -1)"
+                >−</button>
+
+                <input
+                  class="qty-input"
+                  type="number"
+                  id="qty-${p.id}"
+                  value="${currentQ}"
+                  min="1"
+                  max="${p.stock}"
+                  onchange="clampQty(${p.id}, ${p.stock})"
+                >
+
+                <button
+                  class="qty-btn"
+                  onclick="changeQty(${p.id}, +1)"
+                >+</button>
+
+              </div>
+
+              <!-- Botón carrito -->
+              <button
+                class="btn-add-cart ${inCart ? 'in-cart' : ''}"
+                id="btn-cart-${p.id}"
+                onclick="addToCart(${p.id})"
+              >
+                ${inCart ? '✓ Agregado al carrito' : '🛒 Agregar al carrito'}
+              </button>
+
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /* Controles de cantidad */
+    function changeQty(id, delta) {
+      const input = document.getElementById(`qty-${id}`);
+      const p = Products.getById(id);
+
+      let val = parseInt(input.value) + delta;
+
+      val = Math.max(1, Math.min(val, p.stock));
+      input.value = val;
+
+      // Si ya está en el carrito, actualizar cantidad
+      if (Cart.hasItem(id)) {
+        Cart.setQty(id, val);
+        updateBtn(id);
+      }
+    }
+
+    function clampQty(id, maxStock) {
+      const input = document.getElementById(`qty-${id}`);
+
+      let val = parseInt(input.value);
+
+      if (isNaN(val) || val < 1) {
+        val = 1;
+      }
+
+      if (val > maxStock) {
+        val = maxStock;
+      }
+
+      input.value = val;
+
+      if (Cart.hasItem(id)) {
+        Cart.setQty(id, val);
+        updateBtn(id);
+      }
+    }
+
+    /* Agregar al carrito */
+    function addToCart(id) {
+      const p = Products.getById(id);
+
+      const qty = parseInt(
+        document.getElementById(`qty-${id}`).value
+      ) || 1;
+
+      if (Cart.hasItem(id)) {
+        // Si ya está en el carrito, ir al carrito
+        window.location.href = 'carrito.html';
+        return;
+      }
+
+      Cart.add(p, qty);
+      updateBtn(id);
+
+      UI.toast(`${p.nombre} agregado al carrito 🛒`, 'success');
+    }
+
+    function updateBtn(id) {
+      const btn = document.getElementById(`btn-cart-${id}`);
+
+      if (!btn) return;
+
+      const inCart = Cart.hasItem(id);
+
+      btn.textContent = inCart
+        ? '✓ Agregado al carrito'
+        : '🛒 Agregar al carrito';
+
+      btn.classList.toggle('in-cart', inCart);
+    }
+
+    // Eventos de búsqueda y filtros
+    searchIn.addEventListener('input', renderGrid);
+    catFilter.addEventListener('change', renderGrid);
+
+    // Actualizar cuando cambia el carrito
+    window.addEventListener('cart:updated', renderGrid);
+
+    // Mostrar catálogo
+    renderGrid();
+  </script>
+
+</body>
+</html>

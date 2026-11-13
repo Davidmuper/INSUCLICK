@@ -1,0 +1,9 @@
+# Archivos que NO deben copiarse a la imagen de Docker
+.env
+.env.*
+.git
+target/
+node_modules/
+src/main/frontend/generated/
+*.log
+error-arranque.txt
